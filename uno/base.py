@@ -221,7 +221,7 @@ class UnoBaseField(UnoBase):
             self._has_label = True
             self._label = value
         else:
-            raise Exception()
+            raise Exception('The label must be an UnoBaseElement')
 
     def __render__(self):
         output = ''
