@@ -1,9 +1,10 @@
+# -*- coding: utf-8 -*-
 
-        class ErrorObj(object):
-            pass
+class ErrorObj(object):
+    pass
 
-        error = ErrorObj()
-        error.safe = """
+error = ErrorObj()
+error.safe = """
 UnoForm base cannot override base attributes while unoformsafe is True.
 \tPlease:
 \t\tChange the key '{}' to something else.

@@ -3,12 +3,8 @@
 import markup
 from markupsafe import Markup
 
-try:
-    from .errors import error
-    
-    print "SUPER"
-except:
-    raise Exception('One of the imports failed. Shame on the you.')
+from errors import error
+print "SUPER"
 
 
 class UnoFormatString(object):
@@ -34,12 +30,12 @@ class UnoBaseInfo(object):
 
 class UnoBase(object):
     _info        = UnoBaseInfo()
-    _string      = UnoMetaInfo()
+    _string      = UnoBaseStrings()
     _is_rendered = False
 
-    def _unosafe_assign(self, kwargs, safe=True):
+    def _unosafe_assign(self, kwargs, _safe=True):
         for key, val in kwargs:
-            if safe:
+            if _safe:
                 if key not in self.__dict__.keys():
                     self.__add_attr__(key, val)
             else:
@@ -51,7 +47,7 @@ class UnoBase(object):
         return self()
 
     def __call__(self, **kwargs):
-        return self.__render__(self, **kwargs)
+        return self.__render__(**kwargs)
 
     def finish(self, arg=''):
         self.__render__()
@@ -66,7 +62,7 @@ class UnoBase(object):
     def _rendered(self, value):
         self.__rendered = value
 
-    def __render__(self, **kwargs):
+    def __render__(self, kwargs):
         self._is_rendered = True
         if kwargs:
             self._rendered =  Markup(str(kwargs))
@@ -114,10 +110,10 @@ class UnoBaseElement(UnoBase):
     def __init__(self, name, tag_type, safe=True, **kwargs):
         self._info.name      = name
         self._info.attrs     = kwargs
-        self._info.payload   = self.base_string
-        self._info.tag       = tag
+        self._info.payload   = self._string.base
+        self._info.tag       = tag_type
         self._info.safe      = safe
-        self._unosafe_assign(kwargs, safe=safe)
+        self._unosafe_assign(kwargs, _safe=safe)
         self._rendered = False
 
     def __add_nested__(self, thing):
