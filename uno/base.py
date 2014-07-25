@@ -5,12 +5,14 @@ from markupsafe import Markup
 
 try:
     from .errors import error
+    
     print "SUPER"
 except:
-    raise Exception('NOPE.')
+    raise Exception('One of the imports failed. Shame on the you.')
 
 
 class UnoFormatString(object):
+
     def __init__(self, name):
         __name = name
         self.format_tag = '{' + name + '}'
@@ -18,10 +20,12 @@ class UnoFormatString(object):
     def __call__(self):
         return self.format_tag
 
+
 class UnoBaseStrings(object):
-    base    = UnoFormatString('')
-    element = UnoFormatString('element')
-    nested  = UnoFormatString('nested')
+    base        = UnoFormatString('')
+    element     = UnoFormatString('element')
+    nested      = UnoFormatString('nested')
+    label       = UnoFormatString('label')
 
 
 class UnoBaseInfo(object):
@@ -29,14 +33,9 @@ class UnoBaseInfo(object):
 
 
 class UnoBase(object):
-
-    _info  = UnoBaseInfo()
-    _info.
-    
-    _string                 = UnoMetaInfo()
- 
-    
-    _is_rendered            = False
+    _info        = UnoBaseInfo()
+    _string      = UnoMetaInfo()
+    _is_rendered = False
 
     def _unosafe_assign(self, kwargs, safe=True):
         for key, val in kwargs:
@@ -76,8 +75,6 @@ class UnoBase(object):
         return self.__rendered
 
 
-
-
 class UnoBaseForm(UnoBase):
     _has_title = False
 
@@ -107,19 +104,12 @@ class UnoBaseForm(UnoBase):
     def title(self, value):
         self._has_title = True
         self._title = value
-    
-
-
-#create error class 
-
 
 
 class UnoBaseElement(UnoBase):
-     #this is used to finish the html just prior to 
-
-    _info.nested         =  []
-    super(UnoBaseElement, self).baz(arg)
-
+    """
+    The base class for an Uno element object.
+    """
 
     def __init__(self, name, tag_type, safe=True, **kwargs):
         self._info.name      = name
@@ -139,7 +129,6 @@ class UnoBaseElement(UnoBase):
         else:
             raise Exception("Could not nest {}. Not a UnoBaseElement.".format(str(thing)))
 
-
     def __add_attr__(self, name, value):
         if not isinstance(name, basestring):
             raise Exception('UnoHTMLTag attribute name was not a basestring (str type or unicode type)')
@@ -152,10 +141,6 @@ class UnoBaseElement(UnoBase):
         return [func(x[0], x[1]) for x in self._info.attrs.items()]
 
     def __unicode__(self):
-        """
-        Returns a HTML representation of the field. For more powerful rendering,
-        see the `__call__` method.
-        """
         return self()
 
     def __html__(self):
@@ -197,12 +182,8 @@ class UnoBaseElement(UnoBase):
         return nest
 
 
-
-
-
-
-
 class UnoBaseField(UnoBase):
+
     def __init__(self, name, field_type, elements=[], **kwargs):
         self._info.name = name
         self._info.type = field_type
@@ -224,10 +205,8 @@ class UnoBaseField(UnoBase):
             else:
                 raise Exception("Kwargs invalid for elements assignment. Make sure kwargs['']" )
 
-
     def _is_element(self, thing):
         return isinstance(thing, UnoBaseElement)
-
 
     def finish(self, arg=''):
         self.raw_html.format(arg)
@@ -253,35 +232,3 @@ class UnoBaseField(UnoBase):
             output += '\n'
         self._rendered = output
         return output
-
-
-
-
-"""
-class UnoMetaClass(type):
-    @staticmethod
-    def wrap(__init__):
-        #Return a wrapped instance method
-        def outer(self):
-
-            return_value = run(self)
-            print "POST"
-            return return_value
-        return outer
-
-    def __new__(cls, name, bases, attrs):
-        #If the class has a 'run' method, wrap it
-        if '__init__' in attrs:
-            attrs['run'] = cls.wrap(attrs['run'])
-        return super(MetaClass, cls).__new__(cls, name, bases, attrs)
-
-class MyClass(object):
-    #Use MetaClass to make this class
-    __metaclass__ = MetaClass
-    def run(self): print 'RUN',
-
-myinstance = MyClass()
-"""
-
-
-
