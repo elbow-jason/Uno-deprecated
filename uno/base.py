@@ -12,9 +12,17 @@ class UnoFormatString(object):
     def __init__(self, name):
         __name = name
         self.format_tag = '{' + name + '}'
-
+        self.text = self.format_tag
     def __call__(self):
         return self.format_tag
+
+    @property
+    def text(self):
+        return self._text
+    @text.setter
+    def text(self, value):
+        self._text = value
+    
 
 
 class UnoBaseStrings(object):
@@ -22,10 +30,13 @@ class UnoBaseStrings(object):
     element     = UnoFormatString('element')
     nested      = UnoFormatString('nested')
     label       = UnoFormatString('label')
+    payload     = UnoFormatString('payload')
 
 
 class UnoBaseInfo(object):
     safe = True
+    attrs = {}
+    nested = []
 
 
 class UnoBase(object):
@@ -38,10 +49,10 @@ class UnoBase(object):
             if _safe:
                 if key not in self.__dict__.keys():
                     self.__add_attr__(key, val)
+                else:
+                    error.safe_is_true()
             else:
-                raise Exception(error.safe.format(key))
-        else:
-            self.__add_attr__(key, val)
+                self.__add_attr__(key, val)
 
     def __html__(self):
         return self()
@@ -49,33 +60,52 @@ class UnoBase(object):
     def __call__(self, **kwargs):
         return self.__render__(**kwargs)
 
-    def finish(self, arg=''):
+    def _finish(self, arg=''):
         self.__render__()
-        self._rendered = self._rendered.replace(self.substring, '')
+        self._html = self._html.replace(self._string.base, '')
+
+    def _render(self, **kwargs):
+        self.__render__(**kwargs)
 
     @property
-    def _rendered(self):
+    def _html(self):
         if not self._is_rendered:
             self.__render__()
-        return self.__rendered
-    @_rendered.setter
-    def _rendered(self, value):
-        self.__rendered = value
+        return self.__html
+    @_html.setter
+    def _html(self, value):
+        self._is_rendered = True
+        self.__html = value
+    
 
     def __render__(self, kwargs):
         self._is_rendered = True
         if kwargs:
-            self._rendered =  Markup(str(kwargs))
+            self._html =  Markup(str(kwargs))
         else:
-            self._rendered = Markup("<div> NOTHING RENDERED; NO KWARGS PASSED <div>")
-        return self.__rendered
+            self._html = Markup("<div> NOTHING RENDERED; NO KWARGS PASSED <div>")
+        return self._html
+
+    def _merge_dicts(self, a, b):
+        return dict(a.items() + b.items())
+
+    def _add_element(self, orig_list, thing):
+        orig_list._insert_element(len(orig_list), thing)
+        return orig_list
+
+    def _insert_element(self, orig_list, thing, idx): # idx for index
+        if isinstance(thing, UnoBaseElement):
+            orig_list.insert(idx, thing)
+            return orig_list
+        else:
+            raise Exception('Inserted object was not an UnoBaseElement')
 
 
 class UnoBaseForm(UnoBase):
     _has_title = False
 
     def __init__(self, name, fields=[], **kwargs):
-        self._info.name = name
+        self.name       = name
         self.fields     = fields
 
     def _extract_fields_from_kwargs(self, kwargs):
@@ -107,30 +137,64 @@ class UnoBaseElement(UnoBase):
     The base class for an Uno element object.
     """
 
-    def __init__(self, name, tag_type, safe=True, **kwargs):
+    def __init__(self, name='', safe=True, attrs={}):
+        self._info.tag       = 'div'
         self._info.name      = name
-        self._info.attrs     = kwargs
-        self._info.payload   = self._string.base
-        self._info.tag       = tag_type
+        self._info.attrs     = attrs
+        self._info.payload   = ''
         self._info.safe      = safe
-        self._unosafe_assign(kwargs, _safe=safe)
-        self._rendered = False
 
-    def __add_nested__(self, thing):
+    def _update_info(self, attr_name, value):
+        self._info.__dict__[attr_name] = value
+
+    def _add_nested__(self, thing):
         self.__insert_nested__(len(self._info.nested), thing)
 
-    def __insert_nested__(self, idx, thing): # idx for index
+    def _insert_nested__(self, idx, thing): # idx for index
         if isinstance(thing, UnoBaseElement):
             self._info.nested.insert(idx, thing)
         else:
             raise Exception("Could not nest {}. Not a UnoBaseElement.".format(str(thing)))
 
-    def __add_attr__(self, name, value):
+    def _check_for_attr_named_class(self, name, value):
+        if name == 'class' or name == '_class':
+            return 'class_', value
+        else:
+            return name, value
+
+    def _attr_named_class_prerender(self, attr_dict):
+        if any(x in ['class', '_class', 'class_'] for x in attr_dict.keys()):
+            try:
+                x = attr_dict['class']
+                return attr_dict
+            except: pass 
+
+            try:
+                attr_dict['class'] = attr_dict['class_']
+                del attr_dict['class_']
+                return attr_dict
+            except: pass
+
+            try:
+                attr_dict['class'] = attr_dict['_class']
+                del attr_dict['_class']
+                return attr_dict
+            except: pass
+
+    def _update_attrs(self, attrs):
+        self._info.attrs = self._merge_dicts(self._info.attrs, attrs)
+
+    def _add_attrs(self, attrs):
+        for name, value in attrs.items():
+            self._add_attr(name, value)
+
+    def _add_attr(self, name, value):
+        (name, value) = self._check_for_attr_named_class(name, value)
         if not isinstance(name, basestring):
             raise Exception('UnoHTMLTag attribute name was not a basestring (str type or unicode type)')
         if not isinstance(value, basestring):
             raise Exception('UnoHTMLTag attribute value was not a basestring (str type or unicode type)')
-        self._info.attrs = dict(self._info.attrs.items() + dict(name=value).items())
+        self._update_attrs({name:value})
         setattr(self, name, value)
 
     def __iter__(self, func):
@@ -145,32 +209,37 @@ class UnoBaseElement(UnoBase):
     def __call__(self, **kwargs):
         return self.__render__(self, **kwargs)
 
-    def __stringify_kwarg__(self, kwarg_tuple):
+    def _stringify_kwarg(self, kwarg_tuple):
         return "{}={}".format(kwarg_tuple[0], kwarg_tuple[1])
 
-    def __markup_safe__(self, html_string):
+    def _markup_safe(self, html_string):
         return Markup(html_string)
 
+    def _render(self, **kwargs):
+        self.__render__(self, **kwargs)
+
     def __render__(self, this_obj, **kwargs):
-        new_kwargs = dict(this_obj._info._attrs.items() + kwargs.items())
+        new_kwargs = this_obj._merge_dicts(this_obj._info.attrs, kwargs)
+        new_kwargs = this_obj._attr_named_class_prerender(new_kwargs)
         try:
-            this_obj.__payload__ += __rendernested__()
-            element = markup.__getattribute__(this_obj.tag)(this_obj.__payload__, **new_kwargs)
+            this_obj._info.payload += this_obj._render_nested()
+            element = markup.__getattribute__(this_obj._info.tag)(this_obj._info.payload, **new_kwargs)
         except AttributeError, e:
-            if str(e).starts_with("'module' object has no attribute"):
+            if str(e).startswith("'module' object has no attribute"):
                 raise Exception("markup module has no html tag type '{}'".format(this_obj._info.tag))
             else:
                 raise e
         except TypeError, e:
-            if str(e).starts_with('<lambda>() argument after ** must be a mapping, not'):
-                raise Exception('invalid kwargs for rendering check the .attributes of {}'.format(this_obj._info.name))
+            if str(e).startswith('<lambda>() argument after ** must be a mapping, not'):
+                raise Exception("Invalid kwargs for rendering check the ._info._attrs of '{}' object.".format(this_obj._info.name))
             else:
                 raise e
+        this_obj._is_rendered = True
+        this_obj._html    = this_obj._markup_safe(element)
+        self = this_obj
+        return self._html
 
-        self._rendered = self.__markup_safe__(element)
-        return self._rendered
-
-    def __rendernested__(self):
+    def _render_nested(self):
         nest = ''
         for element in self._info.nested:
             nest += element()
@@ -180,26 +249,65 @@ class UnoBaseElement(UnoBase):
 
 class UnoBaseField(UnoBase):
 
-    def __init__(self, name, field_type, elements=[], **kwargs):
-        self._info.name = name
-        self._info.type = field_type
-        self.elements = elements
-        self._has_label = False
+    @property
+    def elements(self):
+        return self._elements
+    @elements.setter
+    def elements(self, value):
+        self._elements = self._check_elements(value)
 
-    def _init_elements(self, kwargs):
-        self.elements = self._extract_elements(kwargs)
+    def __init__(self, name, elements=[], field_type='text'):
+        self.name       = name
+        self.elements   = elements
+        self._has_label = False
+        self.field_type = field_type
+
+
+    def _check_elements(self, elements):
+        if isinstance(elements, list):
+            if self._are_elements(elements):
+                return elements
+        elif isinstance(elements, tuple):
+            if self._are_elements(elements):
+                return [x for x in elements]
+        elif isinstance(elements, dict):
+            try:
+                x = self._extract_elements_from_kwargs(elements)
+            except: pass
+            try:
+                if x:
+                    if self._are_elements(x):
+                            return x
+            except: pass
+            try:
+                if self._are_elements(elements.values()):
+                    return elements.values()
+            except: pass
+        elif self._is_element(elements):
+            return list(elements)
+        else:
+            error.not_elements()
+
+
+    def _add_elements(self, kwargs):
+        self.elements.append(kwargs)
+
+    def _reorder_element(self, name, new_idx):
+        pass
 
     def _extract_elements_from_kwargs(self, kwargs):
         if kwargs.has_key('elements'):
             if self._is_element(kwargs['elements']):
                 return [kwargs['elements']]
-            if isinstance(kwargs['elements'], list, tuple):
-                if not False in [self._is_element(x) for x in kwargs['elements']]:
-                    return kwargs['elements']
-                else:
-                    raise Exception("At least one of the indexes of the passed kwarg\'s 'elements' list was not a UnoBaseElement child")
+            elif isinstance(kwargs['elements'], list, tuple):
+                self._are_elements(kwargs['elements'].values())
+                return kwargs['elements']
             else:
-                raise Exception("Kwargs invalid for elements assignment. Make sure kwargs['']" )
+                raise Exception("At least one of the indexes of the kwargs's 'elements' list was not a UnoBaseElement child")
+
+
+    def _are_elements(self, thing_list):
+        return not False in [self._is_element(x) for x in thing_list]
 
     def _is_element(self, thing):
         return isinstance(thing, UnoBaseElement)
@@ -226,5 +334,5 @@ class UnoBaseField(UnoBase):
         for element in self.elements:
             output += element()
             output += '\n'
-        self._rendered = output
+        self._html = output
         return output
