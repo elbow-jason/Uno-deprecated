@@ -1,5 +1,10 @@
 # -*- coding: utf-8 -*-
 
+from uno import markup
+
+def combine_dicts(a, b):
+    return dict(a.items() + b.items())
+
 def namestr(obj, namespace):
     """
     called via:
@@ -17,6 +22,12 @@ def get_all_parent_methods(cls):
     for i in index_list:
         method_dict = dict(method_dict.items() + cls.mro()[i].__dict__.items())
     return method_dict
+
+def remove_double_underscores(dictthing):
+    for key in dictthing.keys():
+        if key.startswith('__'):
+            del dictthing[key]
+    return dictthing
 
 def startswith_underscore(dictthing):
     return [x for x in dictthing.keys() if x.startswith('_')]
@@ -59,3 +70,9 @@ class PlaceHolder(object):
     object. Seriously. You'll break everything.
     """
     pass
+
+def render(obj):
+    return getattr(markup, obj._tag).__call__(obj._payload, **obj._css_attrs())
+
+def bi_gram_tuple_to_dict(tup):
+    return dict((y, x) for x, y in tup)
