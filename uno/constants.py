@@ -1,5 +1,6 @@
+# -*- coding: utf-8 -*-
 
-
+from uno import helpers
 
 PAYLOAD = '{PAYLOAD}'
 CSS     = '{CSS}'
@@ -22,24 +23,39 @@ LINK_TAGS = ('a', 'base',)
 
 IMAGE_AND_OBJECTS_TAGS = ('img', 'area', 'map', 'object', 'param',)
 
+LIST_TAGS = ('ul','ol','li','dl','dt','dd',)
 
+TABLE_TAGS = ('table', 'tr', 'td', 'th', 'tbody', 'thead', 'tfoot', 'col', 'colgroup', 'caption',)
 
+SCRIPTING_TAGS = ('script', 'noscript',)
 
-
-
+PRESENTATION_TAGS = ('b', 'i', 'tt', 'sub', 'sup', 'big', 'small', 'hr',)
 
 SPECIAL_PAYLOAD_TAGS = [('comment', '<!-- {PAYLOAD} -->')]
 
-STATIC_TAGS = [('DOCTYPE', '<!DOCTYPE>')]
-
-
-
-
+STATIC_TAGS = [('DOCTYPE', '<!DOCTYPE>'), ]
 
 SELF_CLOSING_TAGS = ('area', 'base', 'br', 'col', 'command', 'embed', 'hr',
         'img', 'input', 'keygen', 'link', 'meta', 'param', 'source', 
         'track', 'wbr')
 
-PAYLOAD_TAGS = ['div', 'p', 'nav', 'html', 'head',
+
+NORMAL_TAGS = ['div', 'nav', 'html', 'head',
                 'label', 'form', 'button', 'textarea', 'select', 'option', 
-                'optgroup', 'ul', 'ol', 'li', ] + FORM_TAGS[1:]
+                'optgroup', 'ul', 'ol', 'li', 'a', ] +  list(TEXT_TAGS)
+
+
+ALL_TAGS = list(FORM_TAGS) + list(STRUCTURE_TAGS) + list(META_TAGS) + list(TEXT_TAGS) + list(LINK_TAGS) + list(IMAGE_AND_OBJECTS_TAGS) + list(LIST_TAGS) + list(TABLE_TAGS) + list(SCRIPTING_TAGS) + list(PRESENTATION_TAGS)
+
+ABNORMAL_TAGS = list(SPECIAL_PAYLOAD_TAGS) + list(STATIC_TAGS) + list(SELF_CLOSING_TAGS)
+
+
+
+#PAYLOAD_TAGS = helpers.minus(ALL_TAGS, SELF_CLOSING_TAGS)
+#PAYLOAD_TAGS = helpers.minus(PAYLOAD_TAGS, STATIC_TAGS)
+
+
+
+
+
+
