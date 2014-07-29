@@ -38,6 +38,17 @@ def convert_args_to_sets(f):
     return wrapper
 
 
+def accessible(f):
+    """
+    Makes class properties accessible to self.__class__ (i hope) to via creation of an '_accessible_<property>' attr.
+    """
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        print 'KWARGS= ', kwargs
+        setattr(args[0], kwargs['name'], args[1])
+        print "property: ", str(getattr(args[0], kwargs['name']))
+        return f(*args, **kwargs)
+    return wrapper
 
 
 

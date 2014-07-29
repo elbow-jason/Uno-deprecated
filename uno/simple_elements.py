@@ -69,6 +69,11 @@ class UnoGroup(UnoBase):
         self.add_elements_property('payloads', [])
         self.add_elements_property('pre_payloads', [])
         self.add_elements_property('post_payloads', [])
+        self.add_elements_property('tags', [])
+        self.add_elements_property('css_dicts', [])
+        self.add_elements_property('css_texts', [])
+        self.add_elements_property('texts', [])
+
 
 
     @property
@@ -77,7 +82,9 @@ class UnoGroup(UnoBase):
         html += self.pretext
         for child in self.elements:
             html += child.render
+            html += '\n'
         html += self.posttext
+        self.render = html
         return self._render
 
     @render.setter
@@ -89,52 +96,95 @@ class UnoGroup(UnoBase):
         self.pretext  = ''
         self.posttext = ''
 
+#from decorators import accessible
+
+
+def tag_from_class(class_obj, attr):
+    return getattr(class_obj, attr)
+
+#from uno.metaclass import UnoElementMetaClass
 
 class UnoElement(object):
 
     members = {}
+    def __init__(self, tag=None, text=None, elements=[], payload='', posttext='',
+                 pretext='', pre_payload='', post_payload='', data=None,
+                 css_dict={}, meta_html_type=''):
+
+        if tag == None:
+            self.tag = self.__class__._accessible_tag
+        else:
+            self.tag    = tag
+
+        self.data       = data 
+        self.elements   = elements
+        self.payload    = payload
+        self.css_dict   = css_dict
+        self.posttext   = posttext
+        self.pretext    = pretext
+        self.pre_payload  = pre_payload
+        self.post_payload = post_payload
+        self.css_memory_text = helpers.ele.kwargs_to_css(self.css_dict)
+
+    @property
+    def css_text(self):
+        updated = helpers.ele.kwargs_to_css(self.css_dict)
+        if updated != self.css_memory_text or self.css_memory_text == 'brand_new':
+            self.css_text = updated
+        return self._css_text
+
+
+    @css_text.setter
+    def css_text(self, value):
+        print 'new css -> ' + value
+        self._css_text = value
+        self.css_memory_text = value
+
 
     @property
     def css_dict(self):
         return self._css_dict
+
     @css_dict.setter
     def css_dict(self, value):
-        self.reset_css_text()
         self._css_dict = value
+        self.css_text
+
 
     @property
     def tag(self):
         return self._tag
+
     @tag.setter
     def tag(self, value):
+        if not isinstance(value, (basestring)):
+            raise Exception('UnoElement tag must be a basestring. {} was not acceptable.'.format(value))
+        print "New TAG: ", value
         self._tag = value
         self.reset_text_html()
-
 
     @classmethod
     def new(cls, name, tag='div', text=None, elements=None, payload=None, posttext=None,
                  pretext=None, pre_payload=None, post_payload=None, data=None,
                  css_dict=None):
         class newClass(UnoElement):
+            _accessible_tag = ''
+            pass
 
-            @classmethod
-            def add_cls_attr(cls, attname, val):
-                setattr(cls, attname, val)
-
-        def set_new_attrs(new_class, class_cls, attr_name, local_var, attr_default):
+        def set_new_attrs(new_class, this_cls, attr_name, local_var, attr_default):
             if local_var:
-                new_class.add_cls_attr(attr_name, local_var)
+                setattr(new_class, attr_name, local_var)
             try:
-                cls_attr = getattr(class_cls, attr_name)
+                cls_attr = getattr(this_cls, attr_name)
                 if cls_attr != None:
-                    new_class.add_cls_attr(attr_name, cls_attr)
+                    setattr(new_class, attr_name, cls_attr)
                 else:
-                    new_class.add_cls_attr(attr_name, attr_default)
+                    setattr(new_class, attr_name, attr_default)
             except:
-                new_class.add_cls_attr(attr_name, attr_default)
-
+                setattr(new_class, attr_name, attr_default)
 
         attrs_to_set = [ ('tag', tag),
+                         ('_accessible_tag', tag),
                          ('elements', list()), 
                          ('payload',  str()),
                          ('posttext', str()),
@@ -142,11 +192,19 @@ class UnoElement(object):
                          ('pre_payload',  str()),
                          ('post_payload', str()),
                          ('data', None),
-                         ('css_dict',  dict()),]
+                         ('css_dict',  dict()),
+                         ('_accessible_css_text', str()),
+                         ('css_memory_text', 'brand_new')]
 
+
+        
         for attr in attrs_to_set:
-            set_new_attrs(newClass, cls, attr[0], locals()[attr[0]], attr[1] )
-  
+            try:
+                locales = locals()[attr[0]]
+            except:
+                locales = None
+            set_new_attrs(newClass, cls, attr[0], locales, attr[1] )
+
         newClass.__name__ = name.title()
         cls.members[name] = dict(name=name,class_obj=newClass)
         return newClass
@@ -177,8 +235,7 @@ class UnoElement(object):
             kids += newline
         return kids
 
-    def reset_css_text(self):
-        self.css_text   = helpers.ele.kwargs_to_css(self.css_dict)
+
 
     def add_css(self, keywarg):
         self.css_dict = helpers.combine_dicts(self.css_dict, keywarg)
@@ -188,20 +245,8 @@ class UnoElement(object):
         self.text = helpers.ele.setup_text_by_tag(self.tag)
 
 
-    def __init__(self, tag='div', text=None, elements=[], payload='', posttext='',
-                 pretext='', pre_payload='', post_payload='', data=None,
-                 css={}, meta_html_type=''):
 
-        self.tag        = tag
-        self.data       = data 
-        self.elements   = elements
-        self.payload    = payload
-        self.css_dict   = css
-        self.reset_css_text()
-        self.posttext   = posttext
-        self.pretext    = pretext
-        self.pre_payload  = pre_payload
-        self.post_payload = post_payload
+
 
     def __repr__(self):
         return self.render
@@ -224,11 +269,11 @@ class UnoElementFactory(object):
 
     def set_all(self):
         for tag in PAYLOAD_TAGS:
-            self.set_new(tag.title(), UnoElement.new(tag, tag, text=self.gen(tag)))
+            self.set_new(tag.title(), UnoElement.new(tag, tag=tag, text=self.gen(tag)))
         for tag in SELF_CLOSING_TAGS:
-            self.set_new(tag.title(), UnoElement.new(tag, tag, text='<'+ tag +' '+ CSS + ' />'))
+            self.set_new(tag.title(), UnoElement.new(tag, tag=tag, text='<'+ tag +' '+ CSS + ' />'))
         for tag in STATIC_TAGS:
-            self.set_new(tag[0].title(), UnoElement.new(tag[0], tag[0], text=tag[1]))
+            self.set_new(tag[0].title(), UnoElement.new(tag[0], tag=tag[0], text=tag[1]))
 
     def set_new(self, tag, element_obj):
         setattr(self, tag, element_obj)

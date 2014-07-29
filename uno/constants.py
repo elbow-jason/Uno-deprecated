@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from uno import helpers
-
 PAYLOAD = '{PAYLOAD}'
 CSS     = '{CSS}'
 
@@ -54,8 +52,7 @@ ABNORMAL_TAGS = list(SPECIAL_PAYLOAD_TAGS) + list(STATIC_TAGS) + list(SELF_CLOSI
 #PAYLOAD_TAGS = helpers.minus(ALL_TAGS, SELF_CLOSING_TAGS)
 #PAYLOAD_TAGS = helpers.minus(PAYLOAD_TAGS, STATIC_TAGS)
 
-
-
-
+#html tags
+#TEXTAREA    = 'textarea'
 
 

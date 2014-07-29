@@ -171,7 +171,8 @@ def render(obj):
 def bi_gram_tuple_to_dict(tup):
     return dict((y, x) for x, y in tup)
 
-from constants import SELF_CLOSING_TAGS, PAYLOAD, CSS, STATIC_TAGS
+from constants import (SELF_CLOSING_TAGS, PAYLOAD, CSS, STATIC_TAGS, 
+                        NORMAL_TAGS, ABNORMAL_TAGS,)
 
 PAYLOAD_TAGS = minus(NORMAL_TAGS, ABNORMAL_TAGS)
 
@@ -197,8 +198,7 @@ class ElementHelper(object):
     def kwargs_to_css(css_dict):
         attrs = ''
         for bi_tup in css_dict.items():
-            new = bitup_to_css(bi_tup)
-            print 'new css -> ' + new
+            new = ElementHelper.bitup_to_css(bi_tup)
             attrs += new
         return attrs
 
