@@ -1,74 +1,50 @@
+
 # -*- coding: utf-8 -*-
 
-from uno import markup, helpers
 
-class InheritableMethodsClass(object):
-    _not_inherited = helpers.PlaceHolder.__dict__.keys()
-    
-    @classmethod
-    def _get_methods(cls):
-        return helpers.get_all_parent_methods(cls)
-    
-    @classmethod
-    def _ez_not_css(cls):
-        return helpers.startswith_underscore(cls.__dict__)
+from uno.base_elements import base_ele
+import uno.css_constants as c
 
-    @classmethod
-    def _parent_dicts(cls):
-        return helpers.remove_double_underscores(cls._get_methods())
+from uno import UnoBaseElement, UnoBaseGroup
 
-    @classmethod
-    def _add_not_css(cls, new_items):
-        cls._not_css = cls._not_css + new_items
+DEF_CLASS = c.FORM_CTRL
+FIELD_DICT = {c.CLASS: c.FORM_CTRL}
 
-    def __init__(self):
-        self._not_css = self._ez_not_css()
-        #self.__dict__ = helpers.remove_list_items_from_dict(self._not_inherited, self._parent_dicts())
+def INPUT(type_of_input):
+    return base_ele.Input(css_dict={c.TYPE:type_of_input}).add_css(FIELD_DICT)
 
+def input_text():
+    return INPUT('text')
 
-class Base(InheritableMethodsClass):
-    pass
+def select():
+    return base_ele.Select(css_dict=FIELD_DICT)
 
-class BaseElement(Base):
-    _tag  = 'div'
-    _payload = ''
+def ng_text_input(ng_model_name):
+    x = input_text()
+    x.add_css({c.NGM: ng_model_name})
+    return x
 
-    def _method_name_fixer(self, key):
-        if key in ['_class', 'class_', 'class']:
-            return 'class'
-        elif key in ['_type', 'type_']:
-            return 'type'
-        else:
-            return key
+def button():
+    x = base_ele.Button()
+    x.add_css={c.TYPE:c.BUTTON, c.CLASS: c.BTN}
+    return x 
 
-    def _set_name(self, name):
-        self.name = name
+def btn_outline():
+    btn = button()
+    btn.add_css({c.CLASS: c.BTN_OUTLINE})
+    return btn
 
-    def _css_attrs(self):
-        css_dict = {}
-        for key, value in self.__dict__:
-            if not key in self._not_css:
-                key = self._method_name_fixer(key)
-                css_dict[key] = value
-        return css_dict
+def btn_out_info():
+    x = btn_outline()
+    x.add_css({})
 
-    def _render(self, *args, **kwargs):
-        helpers.set_args_blank(self, args)
-        helpers.set_kwargs(self, kwargs)
-        return getattr(markup, self._tag).__call__(self._payload, **self._css_attrs())
+    return btn_outline().append_css('class', c.BTN_INFO)
 
+def btn_out_success():
+    return btn_outline().append_css('class', c.BTN_SUCCESS)
 
-class BaseDiv(BaseElement):
-    pass
-
-class BaseInput(BaseElement):
-    _tag = 'input'
-    value = ""
-
-
-class BaseTextInput(BaseInput):
-    _type = 'text'
-
+def option(payload):
+    return base_ele.Option(payload=payload)
 
 
 

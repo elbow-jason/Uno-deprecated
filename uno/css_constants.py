@@ -15,6 +15,7 @@ CHARSET     = 'charset'
 ID          = 'id'
 CONTENT     = 'content'
 STYLE       = 'style'
+FOR         = 'for'
 
 
 
@@ -27,7 +28,7 @@ HREF        = 'href'
 REL         = 'rel'
 STYLESHEET  = 'stylesheet'
 TOP         = 'top'
-
+BUTTON      = 'button'
 
 
 #prefixes
@@ -64,14 +65,20 @@ ERROR       = 'error'
 INFO        = 'info'
 DEFAULT     = 'default'
 WARNING     = 'warning'
+OUTLINE     = 'outline'
+LINK        = 'link'
 
 #btns
 BTN         = 'btn'
-BTN_SUCCESS = BTN_ + SUCCESS
-BTN_ERROR   = BTN_ + ERROR
-BTN_INFO    = BTN_ + INFO
 BTN_DEFAULT = BTN_ + DEFAULT
 BTN_PRIMARY = BTN_ + PRIMARY
+BTN_SUCCESS = BTN_ + SUCCESS
+BTN_INFO    = BTN_ + INFO
+BTN_WARNING = BTN_ + WARNING
+BTN_ERROR   = BTN_ + ERROR
+BTN_OUTLINE = BTN_ + OUTLINE
+BTN_LINK    = BTN_ + LINK
+
 
 #field_groups
 HAS_        = 'has-'

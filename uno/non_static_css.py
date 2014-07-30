@@ -1,5 +1,5 @@
 
-
+#not used
 class NonStat(object):
     def __init__(self, string):
         self.string = string

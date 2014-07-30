@@ -1,5 +1,13 @@
+# -*- coding: utf-8 -*-
 
-from markupsafe import markup as html
 
-class TextInput(object):
-    pass
+from uno.base_elements import base_ele
+
+from uno import UnoBaseElement, UnoBaseGroup
+
+
+
+class InputField(UnoBaseGroup):
+
+    elements = [ele.Label()]
+

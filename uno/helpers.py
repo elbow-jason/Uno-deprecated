@@ -4,7 +4,7 @@ import itertools
 from functools import wraps
 from collections import Iterable
 
-from uno import markup
+import markup
 
 
 
