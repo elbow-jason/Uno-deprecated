@@ -80,6 +80,12 @@ class UnoBaseParser(HTMLParser):
         html['named_ent'+ self.tracker.ct()] = c
         self.tracker.tick()
 
+    def reserved_word_checker(self, attr_name):
+        if attr_name in RESERVED_WORDS_LOWER:
+            return attr_name.upper()
+        else:
+            return attr_name
+
     def parse(self, raw_html):
         self.start()
         return self.feed(raw_html)
@@ -101,18 +107,9 @@ class UnoBaseParser(HTMLParser):
             text += template.format(varname=varname, key=key, value=value)
         return text
 
-    def reserved_word_checker(self, attr_name):
-        if attr_name in RESERVED_WORDS_LOWER:
-            return attr_name.upper()
-        else:
-            return attr_name
-
     def add_parsed_payload(self, **kwargs):
         print 'payload kwargs:', kwargs
-        return "\n{varname}.{pname} = Payload('{pname}', '{payload}')".format(**kwargs)
-        x = "\n{varname}.{pname} = Payload('{pname}', '{payload}')"
-        x = x.format(**kwargs)
-        return x
+        return "\n{varname}.{pname} = Payload('{pname}', \"\"\"{payload}\"\"\")".format(**kwargs)
 
     def parsed_to_code(self, parsed_data):
         text = ''
@@ -135,8 +132,14 @@ class UnoBaseParser(HTMLParser):
                 text += self.add_parsed_payload(**k_wargs)
         return text
 
+    def save(self, filename, data):
+        with open(filename, 'w+') as file_:
+            file_.write(data)
 
 
+    def save_with_imports(self, filename, data):
+        new_data = 'from uno.base import Element, Css, Payload\n\n' + data
+        self.save(filename, new_data)
 
 uno_parser  = UnoBaseParser()
 

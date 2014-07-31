@@ -5,7 +5,8 @@ from collections import Iterable, OrderedDict
 from uno import markup, helpers, Markup, constants
 
 from uno.constants import (PAYLOAD, CSS, STATIC_TAGS, NORMAL_TAGS, 
-                           ABNORMAL_TAGS, SELF_CLOSING_TAGS,)
+                           ABNORMAL_TAGS, SELF_CLOSING_TAGS,
+                           RESERVED_WORDS_UPPER)
 
 PAYLOAD_TAGS = helpers.minus(NORMAL_TAGS, ABNORMAL_TAGS)
 
