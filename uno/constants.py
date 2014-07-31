@@ -31,11 +31,13 @@ PRESENTATION_TAGS = ('b', 'i', 'tt', 'sub', 'sup', 'big', 'small', 'hr',)
 
 SPECIAL_PAYLOAD_TAGS = [('comment', '<!-- {PAYLOAD} -->')]
 
-STATIC_TAGS = [('DOCTYPE', '<!DOCTYPE>'), ]
+STATIC_TAGS = [('DOCTYPE', '<!DOCTYPE>'),('doctype', '<!DOCTYPE>')]
 
 SELF_CLOSING_TAGS = ('area', 'base', 'br', 'col', 'command', 'embed', 'hr',
         'img', 'input', 'keygen', 'link', 'meta', 'param', 'source', 
         'track', 'wbr')
+
+
 
 
 NORMAL_TAGS = ['div', 'nav', 'html', 'head',
@@ -54,5 +56,8 @@ ABNORMAL_TAGS = list(SPECIAL_PAYLOAD_TAGS) + list(STATIC_TAGS) + list(SELF_CLOSI
 
 #html tags
 #TEXTAREA    = 'textarea'
+
+RESERVED_WORDS_LOWER = ('for', 'class', 'type',)
+RESERVED_WORDS_UPPER = ('FOR', 'CLASS', 'TYPE',)
 
 

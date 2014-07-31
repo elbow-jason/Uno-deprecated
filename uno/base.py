@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from collections import Iterable
+from collections import Iterable, OrderedDict
 
 from uno import markup, helpers, Markup, constants
 
@@ -19,8 +19,9 @@ from itertools import chain
 
 class UnoBase(object):
 
-    #def __repr__(self):
-    #    return self._render
+
+    def __repr__(self):
+        return self._render
 
     def __str__(self):
         return self._render
@@ -45,8 +46,7 @@ class UnoBase(object):
     def __setattr__(self, name, value):
         if not name.startswith('_'):
             if isinstance(value, UnoBase):
-                self._features.append(name)
-                self._features_dict[name] = value
+                self._features[name] = value
         object.__setattr__(self, name, value)
 
 
@@ -55,8 +55,8 @@ class UnoBaseFeature(UnoBase):
 
     def _render_features(self):
         text = ''
-        for feat in self._features:
-            text += self._features_dict[feat]._render
+        for key, value in self._features:
+            text += value._render
         return text
 
     @property
@@ -69,8 +69,9 @@ class UnoBaseFeature(UnoBase):
         self.__render = value
 
     def __init__(self, *args, **kwargs):
-        self._features      = []
-        self._features_dict = {}
+        self._features = OrderedDict()
+        #self._features      = []
+        #self._features_dict = {}
         self._is_type       = ('feature', 'base')
         self._text          = ''
         self._payload       = ''
@@ -80,14 +81,12 @@ class UnoBaseFeature(UnoBase):
         self._parent = obj
 
     def _add_feature(self, feature):
-        self._features.append(feature._name)
-        self._features_dict[feature._name] = feature
+        self._features[feature._name] = feature
 
     def _all_features(self):
-        x = {}
-        x += self._features_dict
+        x = self._features
         for feat in self._features:
-            x += self._features_dict[feat]._all_features()
+            x = helpers.combine_dicts(x, self._features[feat]._all_features())
         return x
 
 
@@ -97,8 +96,8 @@ class Payload(UnoBaseFeature):
 
     def __init__(self, name, text, **kwargs):
         super(Payload, self).__init__(self, **kwargs)
-        self.is_type    = ('payload',)
-        self.name       = name
+        self._is_type    = ('payload',)
+        self._name       = name
         self._text      = text
 
 
@@ -126,7 +125,14 @@ class Css(UnoBaseFeature):
         self.attr       = attr 
         self.value      = value
         self._is_type   = ('css',)
-        self._text      = ' ' + attr + '="{}"'.format(value)
+        self._text      = ' ' + self.reservered_word_check(attr)\
+                        + '="{}"'.format(value)
+
+    def reservered_word_check(self, word):
+        if word in RESERVED_WORDS_UPPER:
+            return word.lower()
+        else:
+            return word
 
     def _extend(self, value):
         self.value += ' ' + value
@@ -140,30 +146,37 @@ class Css(UnoBaseFeature):
         self.__render = value
 
 
-class BaseElement(UnoBaseFeature):
+class Element(UnoBaseFeature):
 
     def __init__(self, name, tag, *args, **kwargs):
         self._tag = tag
         self._postcss_tag = '>'
         self._closing_tag = '<' + self._tag + '/>'
-        spc_tag = kwargs.pop('special_tag', False)
-        if spc_tag:
-            self._closing_tag = ''
-            self._postcss_tag = '>'
-        self_closing = kwargs.pop('self_closing', False)
-        if self_closing:
-            self._closing_tag = ''
-            self._postcss_tag = '/>'
-        super(BaseElement, self).__init__(self, name, **kwargs)
+        self._precss_tag = '<' + self._tag
+        self._static_tag_check(tag)
+        self._self_closing_check(tag)
+        super(Element, self).__init__(self, name, **kwargs)
         self._name = name
         self._is_type = ('element',)
-        self._precss_tag = '<' + self._tag
+
+    def _static_tag_check(self, tag):
+        for stat in STATIC_TAGS:
+            if tag == stat[0]:
+                self._precss_tag = stat[1]
+                self._closing_tag = ''
+                self._postcss_tag = ''
+                
+
+    def _self_closing_check(self, tag):
+        if tag in SELF_CLOSING_TAGS:
+            self._closing_tag = ''
+            self._postcss_tag = '/>'
 
     def _render_group(self, is_type):
         text = ''
         first = True
         for name in self._features:
-            obj = self._features_dict[name]
+            obj = self._features[name]
             if is_type in obj._is_type:
                 if first and is_type in ['payload','element']:
                     first = False
@@ -176,7 +189,7 @@ class BaseElement(UnoBaseFeature):
         text    = ''
         first   = True
         for name in self._features:
-            obj = self._features_dict[name]
+            obj = self._features[name]
             if is_type in obj._is_type:
                 text += obj._render
         return text
@@ -190,6 +203,7 @@ class BaseElement(UnoBaseFeature):
     def _render_elements(self):
         x = self._render_group('element')
         return x
+
 
     @property
     def _render(self):
