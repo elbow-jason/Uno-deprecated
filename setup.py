@@ -2,11 +2,6 @@
 
 from setuptools import setup
 
-required = []
-#for pip requirements :) not currently used... not dependencies.
-with open('requirements.txt') as f:
-    required = f.read().splitlines()
-
 long_description = """
 Extremely fast and easy feature based HTML generator.
 """
@@ -15,7 +10,7 @@ project = 'uno'
 
 setup(
     name=project,
-    version='0.2.0',
+    version='0.2.1',
     description=long_description,
     author='Jason Goldberger',
     author_email='jason@datamelon.io',
