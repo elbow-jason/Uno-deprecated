@@ -18,10 +18,7 @@ from itertools import chain
 
 
 
-
-
 class UnoBase(object):
-
 
     def __repr__(self):
         return self._render
@@ -89,6 +86,7 @@ class UnoBaseFeature(UnoBase):
         self._text          = ''
         self._payload       = ''
         self.__class__.members.append(self)
+        self._uno_id = self.__class__.members.index(self)
 
 
     def _register(self, obj):
@@ -150,7 +148,7 @@ class Css(UnoBaseFeature):
         self._is_type   = ('css',)
         self._text      = ' ' + self._reservered_word_check(attr)\
                         + '="{}"'.format(value)
-        self._quick = CssQuickAdder(self)
+        
 
     def _reservered_word_check(self, word):
         if word in RESERVED_WORDS_UPPER:
@@ -172,9 +170,11 @@ class Css(UnoBaseFeature):
 
 
 
+
 class Element(UnoBaseFeature):
 
     def __init__(self, name, tag, *args, **kwargs):
+        self._quick = CssQuickAdder(self)
         self._tag = tag
         self._postcss_tag = '>'
         self._closing_tag = '</' + self._tag + '>'
@@ -192,6 +192,14 @@ class Element(UnoBaseFeature):
                 self._closing_tag = ''
                 self._postcss_tag = ''
                 
+    def _add_css(self, css_dict):
+        print 'css_dict:', css_dict
+        for key in css_dict:
+            attr_key = key.replace('-', '_')
+            setattr(self, attr_key, Css(key, css_dict[key]) )
+
+
+
 
     def _self_closing_check(self, tag):
         if tag in SELF_CLOSING_TAGS:
@@ -247,3 +255,4 @@ class Element(UnoBaseFeature):
         #print 'closing tag: ', pls
         self.__render = r+e+n+d+er+pls + '\n'
         return self.__render.replace('\n', '').replace('\\', '')
+

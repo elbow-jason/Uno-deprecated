@@ -12,7 +12,13 @@ class CssQuickAdder(object):
         self.element = parent_obj
 
     def _add(self, thing):
-        self.element.add_css(thing)
+        self.element._add_css(thing)
+
+    def add(self, thing):
+        self._add(thing)
+
+    def append_css(self, name, info):
+        self.element.__dict__[name] += info
 
     def ng_model(self, info):
         self._add({c.NGM: info})
@@ -38,14 +44,20 @@ class CssQuickAdder(object):
     def class_(self, info):
         self._class(info)
 
-    def append_css(self, name, info):
-        self.element.css_dict[name] += info
-
     def equal_to(self, info):
         self._add({c.EQ : info})
 
+    def for_(self, info):
+        self.FOR(info)
+
+    def _for(self, info):
+        self.FOR(info)
+
     def FOR(self, info):
         self._add({c.FOR: info})
+
+    def required(self, info):
+        self._add({c.REQUIRED, info})
 
 
 

@@ -1,9 +1,17 @@
 # -*- coding: utf-8 -*-
 
 #css attributes
+#angulars
 NGM         = 'ng-model'
-NAME        = 'name'
+NGAPP       = 'ng-app'
+NGCTRL      = 'ng-contoller'
+NGREQ       = 'ng-required'
+
+#custom angular directives (for jason!)
 EQ          = 'equal-to'
+
+
+NAME        = 'name'
 CLASS       = 'class'
 TYPE        = 'type'
 MULTIPLE    = 'multiple'
@@ -16,7 +24,7 @@ ID          = 'id'
 CONTENT     = 'content'
 STYLE       = 'style'
 FOR         = 'for'
-
+DATA_       = 'data-'
 
 
 
