@@ -6,7 +6,7 @@ import uno.css_constants as c
 
 
 
-class ElementQuickAdder(object):
+class CssQuickAdder(object):
 
     def __init__(self, parent_obj):
         self.element = parent_obj

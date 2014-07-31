@@ -2,7 +2,7 @@
 
 from collections import Iterable, OrderedDict
 
-from uno import markup, helpers, Markup, constants
+from uno import markup, helpers,  constants, Markup
 
 from uno.constants import (PAYLOAD, CSS, STATIC_TAGS, NORMAL_TAGS, 
                            ABNORMAL_TAGS, SELF_CLOSING_TAGS,
@@ -10,11 +10,13 @@ from uno.constants import (PAYLOAD, CSS, STATIC_TAGS, NORMAL_TAGS,
 
 PAYLOAD_TAGS = helpers.minus(NORMAL_TAGS, ABNORMAL_TAGS)
 
-from uno.quickadder import ElementQuickAdder, GroupQuickAdder
+from uno.quickadder import CssQuickAdder, GroupQuickAdder
 
 import copy
 
 from itertools import chain
+
+
 
 
 
@@ -28,7 +30,7 @@ class UnoBase(object):
         return self._render
 
     def __call__(self):
-        return self._render
+        return self #._render
 
     def __unicode__(self):
         return unicode(self._render)
@@ -37,12 +39,14 @@ class UnoBase(object):
         return self._render
 
     def __add__(self, other):
+        temp = '{}{}'
         x = self._render
         try:
             y = other._render
         except:
+            print 'y is', y
             y = str(other)
-        return x + ' ' + y
+        return temp.format(x,y)
 
     def __setattr__(self, name, value):
         if not name.startswith('_'):
@@ -54,7 +58,14 @@ class UnoBase(object):
 class UnoBaseFeature(UnoBase):
     members = []
 
+    def _auto_add_features(self):
+        for key in self.__class__.__dict__.keys():
+            if not key.startswith('_'):
+                obj = self.__class__.__dict__[key]
+                self._features[key] = obj
+
     def _render_features(self):
+        
         text = ''
         for key, value in self._features:
             text += value._render
@@ -71,12 +82,14 @@ class UnoBaseFeature(UnoBase):
 
     def __init__(self, *args, **kwargs):
         self._features = OrderedDict()
+        self._auto_add_features()
         #self._features      = []
         #self._features_dict = {}
         self._is_type       = ('feature', 'base')
         self._text          = ''
         self._payload       = ''
         self.__class__.members.append(self)
+
 
     def _register(self, obj):
         self._parent = obj
@@ -91,8 +104,6 @@ class UnoBaseFeature(UnoBase):
         return x
 
 
-
-
 class Payload(UnoBaseFeature):
 
     def __init__(self, name, text, **kwargs):
@@ -101,35 +112,47 @@ class Payload(UnoBaseFeature):
         self._name       = name
         self._text      = text
 
+    @property
+    def _render(self):
+        x = self._text + self._render_features()
+        self._render = x
+        return self.__render
+
+    @_render.setter
+    def _render(self, value):
+        self.__render = value
+
+
 
 class Css(UnoBaseFeature):
 
     @property
-    def value(self):
-        return self._value
+    def _value(self):
+        return self.__value
 
-    @value.setter
-    def value(self, value):
-        print 'new css', self.attr, 'value:', value
-        self._value = value
+    @_value.setter
+    def _value(self, value):
+        print 'new css', self._attr, 'value:', value
+        self.__value = value
     
     @property
-    def attr(self):
-        return self._attr
-    @attr.setter
-    def attr(self, value):
+    def _attr(self):
+        return self.__attr
+    @_attr.setter
+    def _attr(self, value):
         print 'new css attr:', value
-        self._attr = value
+        self.__attr = value
 
     def __init__(self, attr, value, **kwargs):
         super(Css, self).__init__(self, **kwargs)
-        self.attr       = attr 
-        self.value      = value
+        self._attr       = attr 
+        self._value      = value
         self._is_type   = ('css',)
-        self._text      = ' ' + self.reservered_word_check(attr)\
+        self._text      = ' ' + self._reservered_word_check(attr)\
                         + '="{}"'.format(value)
+        self._quick = CssQuickAdder(self)
 
-    def reservered_word_check(self, word):
+    def _reservered_word_check(self, word):
         if word in RESERVED_WORDS_UPPER:
             return word.lower()
         else:
@@ -147,12 +170,14 @@ class Css(UnoBaseFeature):
         self.__render = value
 
 
+
+
 class Element(UnoBaseFeature):
 
     def __init__(self, name, tag, *args, **kwargs):
         self._tag = tag
         self._postcss_tag = '>'
-        self._closing_tag = '<' + self._tag + '/>'
+        self._closing_tag = '</' + self._tag + '>'
         self._precss_tag = '<' + self._tag
         self._static_tag_check(tag)
         self._self_closing_check(tag)
@@ -221,4 +246,4 @@ class Element(UnoBaseFeature):
         pls = self._closing_tag
         #print 'closing tag: ', pls
         self.__render = r+e+n+d+er+pls + '\n'
-        return self.__render 
+        return self.__render.replace('\n', '').replace('\\', '')
