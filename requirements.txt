@@ -1,5 +1,2 @@
-MarkupSafe==0.23
-argparse==1.2.1
-markup==0.2
--e git+https://github.com/jlgoldb2/Uno.git@93d5590dfde9002871021ded87025e790b7edc34#egg=uno-master
-wsgiref==0.1.2
+
+

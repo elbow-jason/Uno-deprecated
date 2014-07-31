@@ -2,7 +2,7 @@
 
 from collections import Iterable, OrderedDict
 
-from uno import markup, helpers,  constants, Markup
+from uno import  helpers,  constants #, Markup, markup
 
 from uno.constants import (PAYLOAD, CSS, STATIC_TAGS, NORMAL_TAGS, 
                            ABNORMAL_TAGS, SELF_CLOSING_TAGS,

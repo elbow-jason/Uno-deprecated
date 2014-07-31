@@ -3,7 +3,7 @@
 from setuptools import setup
 
 required = []
-#for pip requirements :)
+#for pip requirements :) not currently used... not dependencies.
 with open('requirements.txt') as f:
     required = f.read().splitlines()
 
@@ -23,10 +23,7 @@ setup(
     packages=["uno"],
     include_package_data=True,
     zip_safe=False,
-    install_requires=[
-        'MarkupSafe==0.23',
-        'markup==0.2',
-        ],
+    install_requires=[],
     platforms='any'
     test_suite=''
 )
