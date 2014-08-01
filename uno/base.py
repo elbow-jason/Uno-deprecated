@@ -2,7 +2,7 @@
 
 from collections import Iterable, OrderedDict
 
-from uno import  helpers,  constants #, Markup, markup
+from uno import (helpers, constants)
 
 from uno.constants import (PAYLOAD, CSS, STATIC_TAGS, NORMAL_TAGS, 
                            ABNORMAL_TAGS, SELF_CLOSING_TAGS,
@@ -15,7 +15,6 @@ from uno.quickadder import CssQuickAdder, GroupQuickAdder
 import copy
 
 from itertools import chain
-
 
 
 class UnoBase(object):
@@ -36,21 +35,17 @@ class UnoBase(object):
         return self._render
 
     def __add__(self, other):
-        temp = '{}{}'
-        x = self._render
         try:
             y = other._render
         except:
-            print 'y is', y
             y = str(other)
-        return temp.format(x,y)
+        return self._render + y
 
     def __setattr__(self, name, value):
         if not name.startswith('_'):
             if isinstance(value, UnoBase):
                 self._features[name] = value
         object.__setattr__(self, name, value)
-
 
 class UnoBaseFeature(UnoBase):
     members = []

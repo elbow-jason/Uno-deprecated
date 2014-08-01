@@ -18,6 +18,9 @@ setup(
     packages=["uno"],
     include_package_data=True,
     zip_safe=False,
-    install_requires=[],
+    install_requires=[
+        'py==1.4.22',
+        'pytest==2.6.0',
+        ],
     platforms='any',
 )

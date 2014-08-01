@@ -4,10 +4,6 @@ import itertools
 from functools import wraps
 from collections import Iterable
 
-import markup
-
-
-
 
 def math_func(f):
     """
