@@ -7,7 +7,7 @@ from collections import Iterable
 
 def math_func(f):
     """
-    Statics the methods.
+    Statics the methods. wut.
     """
     @wraps(f)
     def wrapper(*args, **kwargs):
@@ -153,62 +153,17 @@ def set_args_blank(obj, args):
         for arg in args:
             setattr(obj, arg, '')
 
-
-class PlaceHolder(object):
-    """
-    DO NOT ALTER THIS OBJECT. is for referencing the dict of an __init__ed
-    object. Seriously. You'll break everything.
-    """
-    pass
-
-def render(obj):
-    return getattr(markup, obj._tag).__call__(obj._payload, **obj._css_attrs())
-
-def bi_gram_tuple_to_dict(tup):
+def bi_tuple_to_dict(tup):
     return dict((y, x) for x, y in tup)
 
-from constants import (SELF_CLOSING_TAGS, PAYLOAD, CSS, STATIC_TAGS, 
-                        NORMAL_TAGS, ABNORMAL_TAGS,)
+def remove_newlines(string):
+    return string.replace('\n', '')
 
-PAYLOAD_TAGS = minus(NORMAL_TAGS, ABNORMAL_TAGS)
+def joiner(sep, listthing):
+    return sep.join([str(x) for x in listthing])
 
+def join_under(listthing):
+    return joiner('_', listthing)
 
-class ElementHelper(object):
-
-    @staticmethod
-    def setup_text_by_tag(tag):
-        text = ElementHelper.generate_tag(tag)
-        if tag != '':
-            if tag in SELF_CLOSING_TAGS:
-                text = '<'+ tag +' '+ CSS + ' />'
-            for item in STATIC_TAGS:
-                if item[0] == tag:
-                    text = item[1]
-        return text
-
-    @staticmethod
-    def bitup_to_css(kwarg_tuple):
-        return '{}="{}" '.format(kwarg_tuple[0], kwarg_tuple[1])
-
-    @staticmethod
-    def kwargs_to_css(css_dict):
-        attrs = ''
-        for bi_tup in css_dict.items():
-            new = ElementHelper.bitup_to_css(bi_tup)
-            attrs += new
-        return attrs
-
-    @staticmethod
-    def from_markup(tag):
-        return getattr(markup, tag).__call__(PAYLOAD, **dict(replace_me=CSS))
-
-    @staticmethod
-    def generate_tag(tag):
-        try:
-            base_element = ElementHelper.from_markup(tag)
-        except:
-            base_element = ElementHelper.from_markup('div')
-            base_element = base_element.replace('div', tag)
-        return base_element.replace('replace_me=', '').replace('"', '').replace(' ','')
-
-ele = ElementHelper()
+def join_dot(listthing):
+    return joiner('.', listthing)
