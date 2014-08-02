@@ -7,9 +7,10 @@ from config import ParserConfig
 
 class FileManip(object):
 
-    def __init__(self):
+    def __init__(self, parent):
         self.permitted = []
         self.not_configured = True
+        self.parent = parent
 
     def configured_check(self):
         if self.not_configured:
@@ -22,11 +23,11 @@ class FileManip(object):
 
     def update_html_files(self):
         self.configured_check()
-        self.html_files = self.find_files('.html', self.config.html_folder)
+        self.html_files = self.find_files('.html', self.parent.config.html_folder)
 
     def update_source_files(self):
         self.configured_check()
-        self.source_files = self.find_files('.py', self.config.source_folder)
+        self.source_files = self.find_files('.py', self.parent.config.source_folder)
 
     def check_for_overwriting(self):
         print "Checking for potential overwrites..."
@@ -42,7 +43,9 @@ class FileManip(object):
                 print "found."
                 confirm_overwrite = 'unacceptable'
                 while not confirm_overwrite in acceptable:
-                    confirm_overwrite = raw_input("The file '{}' will be overwritten by this action. OK? ( y/n/yes_all/cancel ): ".format(source_name))
+                    confirm_overwrite = raw_input("The file '{}' will be\
+                            overwritten by this action. OK? (\
+                            y/n/yes_all/cancel ): ".format(source_name))
                     if confirm_overwrite in ['n', 'N']:
                         print "The file '{}' will not be overwritten.".format(source_name)
                         self.permitted.pop(self.permitted.index(source_name[:-3]+'.html'))

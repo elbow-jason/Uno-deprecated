@@ -4,7 +4,8 @@ from uno.constants import RESERVED_WORDS_LOWER
 
 class SourceCoder(object):
 
-    def __init__(self, parent_obj):
+    def __init__(self, parent):
+        self.parent = parent
         self.payload_template = "\n    {stack} = Payload('{varname}', \"{data}\")"
         self.css_template     = "\n    {stack} = Css('{key}','{value}')"
         self.element_template = "\n    {stack} = Element('{varname}', '{data}')"
@@ -68,10 +69,10 @@ class SourceCoder(object):
         p = p.lstrip()
         return p
 
-    def generate(self, parsed_data):
+    def generate(self, obj):
         text = ''
-        for item_name in parsed_data:
-            text += self.source_funcs[parsed_data[item_name]['feature']](**parsed_data[item_name])
-        return text
+        for item_name in obj.data:
+            text += self.source_funcs[obj.data[item_name]['feature']](**obj.data[item_name])
+        self.parent.source_code = text
 
 

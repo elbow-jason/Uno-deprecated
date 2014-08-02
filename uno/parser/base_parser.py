@@ -1,40 +1,35 @@
 # -*- coding: utf-8 -*-
 
-from HTMLParser import HTMLParser
+from HTMLParser     import HTMLParser
 from htmlentitydefs import name2codepoint
-from collections import OrderedDict
-
+from collections    import OrderedDict
 
 from uno.constants import SELF_CLOSING_TAGS
-from uno.helpers import join_under
+from uno.helpers   import join_under
 
-from .nested_counter import NestedCounter
-from .source_coder  import SourceCoder
-from .varstacklist  import VarStackList
-from .file_manip    import FileManip
-from .config        import ParserConfig
+from .nested_counter    import NestedCounter
+from .source_coder      import SourceCoder
+from .varstacklist      import VarStackList
+
+from .config            import ParserConfig
 
 
 class NewStyleClassObject(object, HTMLParser):
     pass
 
-class UnoBaseHTMLParser(NewStyleClassObject):
+class UnoHTMLParser(NewStyleClassObject):
 
-    def __init__(self):
+    def __init__(self, name):
         HTMLParser.__init__(self)
         self.tracker    = NestedCounter()
-        self.code       = SourceCoder(self)
+        self.coder      = SourceCoder(self)
         self.varstack   = VarStackList()
-        self.parsed_data = OrderedDict()
-        self.configure()
-
-    def configure(self):
-        self.files          = FileManip()
-        self.config         = ParserConfig(self.files)
-        self.files.config   = self.config
-        self.config.update()
-
-
+        self.data       = OrderedDict()
+        self.html       = ''
+        self.source     = ''
+        self.name       = name
+        self.py_file    = name + '.py'
+        self.html_file  = name + '.html'
 
     @property
     def last_tag(self):
@@ -45,7 +40,6 @@ class UnoBaseHTMLParser(NewStyleClassObject):
 
 
     def parse(self, raw_html):
-        #self.start()
         return self.feed(raw_html)
 
 
@@ -97,7 +91,7 @@ class UnoBaseHTMLParser(NewStyleClassObject):
         self.constructor(tag, data,'payload')
 
     def constructor(self, tag, data,  typer):
-        self.parsed_data[tag +'_' + typer + '_'  + str(self.tracker.g_id)] =\
+        self.data[tag +'_' + typer + '_'  + str(self.tracker.g_id)] =\
                 {'feature': typer.title(), 
                 'data': data, 
                 'position': self.tracker.position,
