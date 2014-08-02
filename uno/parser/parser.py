@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from .base_parser   import UnoHTMLParser
-from .config        import ParserConfig
-from .file_manip    import FileManip
-from .source_coder  import SourceCoder
+from collections import OrderedDict
+
+from .html_extractor import HTMLExtractor
+from .file_manip     import FileManip
+from .source_coder   import SourceCoder
 
 from uno.helpers import combine_dicts
 
@@ -15,9 +16,43 @@ class ParsedObj(object):
         self.html = ''
         self.parsed_data = {}
 """
-
-
 class UnoParser(object):
+
+    def __init__(self):
+        self.filenames = []
+        self.htmls   = OrderedDict()
+        self.datas   = OrderedDict()
+        self.sources = OrderedDict()
+        self.files      = FileManip(self)
+        self.coder      = SourceCoder(self)
+        self.extractor  = HTMLExtractor()
+
+    def run(self):
+        self.dataify_html()
+        self.sourcify_data()
+        self.savify_source()
+
+    def savify_source(self):
+        for name in self.sources.keys():
+            self.files.save_source(name, self.sources[name])
+
+    def sourcify_data(self):
+        for name in self.datas.keys():
+            self.sources[name] = self.coder.generate(name)
+
+    def dataify_html(self):
+        for name in self.htmls.keys():
+            self.datas[name] = self.extractor.parse(self.htmls[name])
+
+
+
+
+
+
+
+
+
+class UnoParser2(object):
 
     def __init__(self):
         self.parsed_obj = {}

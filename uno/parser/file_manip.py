@@ -3,31 +3,33 @@
 
 import os
 
-from config import ParserConfig
+from .path          import Path
 
 class FileManip(object):
 
     def __init__(self, parent):
-        self.permitted = []
-        self.not_configured = True
-        self.parent = parent
-
-    def configured_check(self):
-        if self.not_configured:
-            raise Exception("Parser must be confiured. Try uno_parser.configure()")
-
+        self.permitted  = []
+        self.parent     = parent
+        self.path       = Path(self)
+        self.path.update()
+        self.load_html_files()
+        self.load_source_files()
 
     def find_files(self, extension, directory):
         return [ f for f in os.listdir(directory)
-            if os.path.isfile(os.path.join(directory,f)) and f.endswith(extension)]
+            if os.path.isfile(os.path.join(directory,f))
+            and f.endswith(extension)]
 
-    def update_html_files(self):
-        self.configured_check()
-        self.html_files = self.find_files('.html', self.parent.config.html_folder)
+    def load_html_files(self):
+        self.html_list = self.find_files('.html', self.path.html)
+        for file_ in self.html_list:
+            shortname = file_[:-5]
+            print 'loaded:', file_
+            print 'in html_files as', shortname
+            self.parent.htmls[shortname] = self.open(self.path.html + file_)
 
-    def update_source_files(self):
-        self.configured_check()
-        self.source_files = self.find_files('.py', self.parent.config.source_folder)
+    def load_source_files(self):
+        self.source_list = self.find_files('.py', self.path.source)
 
     def check_for_overwriting(self):
         print "Checking for potential overwrites..."
@@ -35,9 +37,9 @@ class FileManip(object):
             print "Source destination folder is empty. \nSkipping checks..."
             return 0
         acceptable = ['y','Y','n','N','all', 'ALL', 'cancel', 'CANCEL']
-        self.permitted = self.html_files
+        self.permitted = self.html_list
         html_names = [f[:-5] for f in self.html_files]
-        for source_name in self.source_files:
+        for source_name in self.source_list:
             print "checking '{}'...".format(source_name),
             if source_name[:-3] in html_names:
                 print "found."
@@ -62,12 +64,13 @@ class FileManip(object):
             else:
                 print "not found."
 
-    def save_source(self, filename, data):
-        filename = self.config.source_folder + filename
+    def save_source(self, name, data):
+        filename = self.path.source + name + '.py'
         self.save(filename, data)
 
     def save(self, filename, data):
         with open(filename, 'w+') as file_:
+            print 'saving:', filename
             file_.write(data)
 
     def open(self, filename):

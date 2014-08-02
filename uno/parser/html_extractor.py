@@ -8,28 +8,19 @@ from uno.constants import SELF_CLOSING_TAGS
 from uno.helpers   import join_under
 
 from .nested_counter    import NestedCounter
-from .source_coder      import SourceCoder
 from .varstacklist      import VarStackList
-
-from .config            import ParserConfig
 
 
 class NewStyleClassObject(object, HTMLParser):
     pass
 
-class UnoHTMLParser(NewStyleClassObject):
+class HTMLExtractor(NewStyleClassObject):
 
-    def __init__(self, name):
+    def __init__(self):
         HTMLParser.__init__(self)
         self.tracker    = NestedCounter()
-        self.coder      = SourceCoder(self)
         self.varstack   = VarStackList()
         self.data       = OrderedDict()
-        self.html       = ''
-        self.source     = ''
-        self.name       = name
-        self.py_file    = name + '.py'
-        self.html_file  = name + '.html'
 
     @property
     def last_tag(self):
@@ -40,7 +31,8 @@ class UnoHTMLParser(NewStyleClassObject):
 
 
     def parse(self, raw_html):
-        return self.feed(raw_html)
+        self.feed(raw_html)
+        return self.data
 
 
     def handle_starttag(self, tag, attrs):
@@ -51,14 +43,14 @@ class UnoHTMLParser(NewStyleClassObject):
 
         #css parse
         self.tracker.new_level
-        keyval_pair = dict()
         for attr in attrs:
+            keyval_pair = dict()
             #add css feature to stack
             self.varstack.add(attr[0] + '_' + self.tracker.g_id)
             keyval_pair[attr[0]] = attr[1]
             #assign stack as 'stack'
             css_tag = join_under([tag, self.tracker.g_id])
-            self.construct_css(tag, keyval_pair)
+            self.construct_css(css_tag, keyval_pair)
             self.tracker.next
             #remove css feature from stack
             self.varstack.pop
@@ -82,15 +74,15 @@ class UnoHTMLParser(NewStyleClassObject):
         self.tracker.next
 
     def construct_element(self, tag):
-        self.constructor(tag, tag,'element')
+        self.construct(tag, tag,'element')
 
     def construct_css(self, tag, data):
-        self.constructor(tag, data,'css')
+        self.construct(tag, data,'css')
 
     def construct_payload(self, tag, data):
-        self.constructor(tag, data,'payload')
+        self.construct(tag, data,'payload')
 
-    def constructor(self, tag, data,  typer):
+    def construct(self, tag, data,  typer):
         self.data[tag +'_' + typer + '_'  + str(self.tracker.g_id)] =\
                 {'feature': typer.title(), 
                 'data': data, 
@@ -100,3 +92,5 @@ class UnoHTMLParser(NewStyleClassObject):
                 'g_id': self.tracker.g_id,
                 'stack': self.varstack.string,
                 'varname': typer + '_' + str(self.tracker.g_id)}
+
+

@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 
 from uno.constants import RESERVED_WORDS_LOWER
+from IPython.core.debugger import Tracer
 
 class SourceCoder(object):
 
     def __init__(self, parent):
-        self.parent = parent
+        self.parent           = parent
         self.payload_template = "\n    {stack} = Payload('{varname}', \"{data}\")"
         self.css_template     = "\n    {stack} = Css('{key}','{value}')"
         self.element_template = "\n    {stack} = Element('{varname}', '{data}')"
@@ -25,7 +26,9 @@ class SourceCoder(object):
 
     def css(self, **kwargs):
         text = ''
-        stack = kwargs.pop('stack', 'unk_ele_name')
+        stack = self.pretty_css_stack_name(kwargs)
+        print 'KWARGS IS:', kwargs
+        #Tracer()() # look at kwargs
         css = kwargs['data']
         for key in css:
             value = css[key]
@@ -35,6 +38,10 @@ class SourceCoder(object):
                                              value=value)
         return text
 
+    def pretty_css_stack_name(self, kwargs):
+        stack = kwargs.pop('stack', 'unk_ele_name')
+        stack = stack.replace('-','_')
+        return stack
 
     def element(self, **kwargs):
         return self.element_template.format(**kwargs)
@@ -57,6 +64,11 @@ class SourceCoder(object):
     def add_python_class(self, filename):
         return self.python_class_template.format(self.add_classname(filename))
 
+    def add_headers(self, name):
+        text = self.add_utf8()
+        text += self.add_imports()
+        text += self.add_python_class(name)
+        return text
 
     def cleanup_payload(self, payload):
         """
@@ -69,10 +81,19 @@ class SourceCoder(object):
         p = p.lstrip()
         return p
 
-    def generate(self, obj):
+    def process_data(self, name):
         text = ''
-        for item_name in obj.data:
-            text += self.source_funcs[obj.data[item_name]['feature']](**obj.data[item_name])
-        self.parent.source_code = text
+        file_ = self.parent.datas[name]
+        for item in file_.keys(): #file_ is an entire file's data. iter it.
+            data = file_[item]
+            #Tracer()() #look at data. 
+            text += self.source_funcs[data['feature']](**data)
+        return text
+
+    def generate(self, name):
+        text = self.add_headers(name)
+        counter = 0
+        text += self.process_data(name)
+        return text
 
 
