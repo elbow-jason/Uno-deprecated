@@ -277,12 +277,13 @@ class UnoBaseField(UnoBaseFeature):
         self._name = name
 
 
-class UnoBaseForm(UnoBaseFeature):
-
-    def __init__(self, *args, **kwargs):
-        super(UnoBaseForm, self).__init__(self, *args, **kwargs)
-        self._is_type = ('form', 'base')
-        self._fields = []
+class UnoBaseForm(Element):
+    def __init__(self, name, *args, **kwargs):
+        tag = 'form'
+        super(UnoBaseForm, self).__init__(name, tag, *args, **kwargs)
+        self._tag = tag 
+        self._is_type = ('form', 'base', 'element')
+        self._fields = OrderedDict()
 
     @property
     def _fields(self):
@@ -296,7 +297,7 @@ class UnoBaseForm(UnoBaseFeature):
     def _update_fields(self):
         for attr in self._features.keys():
             if 'field' in self._features[attr]._is_type:
-                self._fields.append(self._features[attr])
+                self._fields[attr] = self._features[attr]
 
     def _populate_obj(self, obj):
         for field in self._fields:
