@@ -10,7 +10,7 @@ project = 'uno'
 
 setup(
     name=project,
-    version='0.3.0',
+    version='0.3.1',
     description=long_description,
     author='Jason Goldberger',
     author_email='jason@datamelon.io',
