@@ -23,7 +23,10 @@ class VarStackList(object):
     
     @property
     def pop(self):
-        self.stack.pop(-1)
+        if len(self.stack) > 0:
+            self.stack.pop(-1)
+        else:
+            print "stack is empty. cannot pop or lock."
 
     @property
     def drop_ele(self):

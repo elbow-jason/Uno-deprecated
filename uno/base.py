@@ -59,7 +59,8 @@ class UnoBaseFeature(UnoBase):
     def _render_features(self):
         
         text = ''
-        for key, value in self._features:
+        for key in self._features:
+            value = self._features[key]
             text += value._render
         return text
 
@@ -251,3 +252,51 @@ class Element(UnoBaseFeature):
         self.__render = r+e+n+d+er+pls + '\n'
         return self.__render.replace('\n', '').replace('\\', '')
 
+class UnoBaseField(UnoBaseFeature):
+
+    def __init__(self, name, **kwargs):
+        super(UnoBaseField, self).__init__(self, **kwargs)
+        self._is_type = ('field', 'base')
+        self._data = ''
+        self._name = ''
+        self._values = []
+        self._title = self._name.replace('_', ' ').title()
+        self._form_name = kwargs.get('parent_name', '')
+
+
+    def _add_value(self, value):
+        self._values.append(value)
+
+    def _add_values(self, values):
+        self._values += values
+
+    def _new_values(self, values):
+        self._values = values
+
+    def _add_name(self, name):
+        self._name = name
+
+
+class UnoBaseForm(UnoBaseFeature):
+
+    def __init__(self):
+        super(UnoBaseForm, self).__init__(self, **kwargs)
+        self._is_type = ('form', 'base')
+        self._fields = []
+
+    @property
+    def _fields(self):
+        self._update_fields()
+        return self.__fields
+    @_fields.setter
+    def _fields(self, value):
+        self.__fields = value
+    
+
+    def _update_fields(self):
+        for attr in self._features.keys():
+            if 'field' in self._features[attr]._is_type:
+                self._fields.append(self._features[attr])
+
+    def _populate_obj(self, obj):
+        for field in self._fields:

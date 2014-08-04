@@ -4,10 +4,10 @@ from uno.base import Element, Css, Payload
 
 class TextInputBs3(Element):
 
-    div_17 = Element('element_17', 'div')
-    div_17.class_18 = Css('CLASS','form-group')
-    div_17.label_21 = Element('element_21', 'label')
-    div_17.label_21.payload_23 = Payload('payload_23', "Text Input with Placeholder")
-    div_17.input_25 = Element('element_25', 'input')
-    div_17.input_25.class_26 = Css('CLASS','form-control')
-    div_17.input_25.placeholder_27 = Css('placeholder','Enter text')
+    div_0 = Element('element_0', 'div')
+    div_0.class_1 = Css('CLASS','form-group')
+    div_0.label_4 = Element('element_4', 'label')
+    div_0.label_4.payload_6 = Payload('payload_6', "Text Input with Placeholder")
+    div_0.input_8 = Element('element_8', 'input')
+    div_0.input_8.class_9 = Css('CLASS','form-control')
+    div_0.input_8.placeholder_10 = Css('placeholder','Enter text')

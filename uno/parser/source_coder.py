@@ -11,7 +11,7 @@ class SourceCoder(object):
         self.css_template     = "\n    {stack} = Css('{key}','{value}')"
         self.element_template = "\n    {stack} = Element('{varname}', '{data}')"
         self.imports_line     = 'from uno.base import Element, Css, Payload\n\n'
-        self.python_class_template = 'class {}(Element):\n'
+        self.python_class_template = 'class {}(UnoBaseFeature):\n'
         self.utf8             = "# -*- coding: utf-8 -*-\n\n"
         self.source_funcs = {}
         self.source_funcs['Payload']  = self.payload

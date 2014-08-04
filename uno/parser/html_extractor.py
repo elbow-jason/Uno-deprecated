@@ -31,8 +31,13 @@ class HTMLExtractor(NewStyleClassObject):
 
 
     def parse(self, raw_html):
-        self.data = OrderedDict()
+        #reset all var data storage and tracking for each parse.
+        self.tracker    = NestedCounter()
+        #self.varstack   = VarStackList()
+        self.data       = OrderedDict()
+        #parse it.
         self.feed(raw_html)
+        #return the data.
         return self.data
 
 

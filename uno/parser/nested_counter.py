@@ -28,7 +28,8 @@ class NestedCounter(object):
 
     @property
     def pos(self):
-        self.pos = str(self.chart[-1])
+        if len(self.pos) > 0:
+            self.pos = str(self.chart[-1])
         return self._pos
     @pos.setter
     def pos(self, value):
@@ -47,7 +48,11 @@ class NestedCounter(object):
     @property
     def end_level(self):
         self.chart.pop(-1)
-        self.counter = self.chart[-1]
+        try:
+            self.counter = self.chart[-1]
+        except:
+            self.counter = 0
+            print 'counter reset to 0 when len of chart was:', str(len(self.chart))
         self.print_chart
         ser_string = 'end level: {}, current item: {}'
         ser_string.format(str(len(self.chart) + 1), str(self.counter))
@@ -56,7 +61,12 @@ class NestedCounter(object):
     @property
     def next(self):
         self.count += 1
-        self.chart[-1] = self.count
+        try:
+            self.chart[-1] = self.count
+        except:
+            len_chart = len(self.chart)
+            self.chart = [0]
+            print 'chart was reinitialized with 0 as first(0th) index when len of chart was:', str(len_chart)
         self.print_chart
         self.up_total
         ser_string = 'new feature on level: {}, item: {}'
