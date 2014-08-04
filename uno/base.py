@@ -279,8 +279,8 @@ class UnoBaseField(UnoBaseFeature):
 
 class UnoBaseForm(UnoBaseFeature):
 
-    def __init__(self):
-        super(UnoBaseForm, self).__init__(self, **kwargs)
+    def __init__(self, *args, **kwargs):
+        super(UnoBaseForm, self).__init__(self, *args, **kwargs)
         self._is_type = ('form', 'base')
         self._fields = []
 
