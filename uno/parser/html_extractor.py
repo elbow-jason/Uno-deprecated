@@ -31,6 +31,7 @@ class HTMLExtractor(NewStyleClassObject):
 
 
     def parse(self, raw_html):
+        self.data = OrderedDict()
         self.feed(raw_html)
         return self.data
 
